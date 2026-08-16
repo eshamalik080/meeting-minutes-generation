@@ -6,8 +6,16 @@ system agrees on.
 """
 
 from datetime import datetime
+from enum import Enum
 
 from pydantic import BaseModel, Field
+
+
+class JobStatus(str, Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
 class ActionItem(BaseModel):
@@ -36,3 +44,18 @@ class MeetingMinutes(BaseModel):
 
     transcript: list[TranscriptSegment] = Field(default_factory=list)
     participants: list[str] = Field(default_factory=list)
+
+
+class UploadResponse(BaseModel):
+    job_id: str
+    status: JobStatus
+
+
+class StatusResponse(BaseModel):
+    job_id: str
+    status: JobStatus
+    filename: str
+    stage: str | None = None
+    error: str | None = None
+    created_at: datetime
+    updated_at: datetime

@@ -2,18 +2,20 @@
 FastAPI entrypoint. Run with:
     uvicorn app.main:app --reload --port 8000
 (from inside backend/, with the venv active)
-
-This is a Phase 0 placeholder that only proves the server boots and CORS is
-wired up. Real endpoints (/upload, /status, /result, /export) are added in
-Phase 2 and Phase 3.
 """
 
-import os
+import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+from app.api import router
+from app.config import CORS_ORIGINS
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
 
 app = FastAPI(
     title="Automated Meeting Minutes API",
@@ -28,6 +30,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(router)
 
 
 @app.get("/health")
