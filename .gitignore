@@ -7,3 +7,4 @@ data/*.wav
 data/*.mp3
 *.pt
 mlruns/
+outputs/*
