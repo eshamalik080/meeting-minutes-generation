@@ -2,23 +2,25 @@ import torch
 from pyannote.audio import Pipeline
 import os
 
+
 def diarize_audio(audio_path: str) -> list:
     """
     Step 5: Speaker Diarization
-    Returns list of (start_sec, end_sec, speaker_label) tuples.
+    Identifies "who spoke when" in an audio file using pyannote.audio.
+    Returns a list of (start_sec, end_sec, speaker_label) tuples.
     """
     hf_token = os.environ["HF_TOKEN"]
 
     pipeline = Pipeline.from_pretrained(
         "pyannote/speaker-diarization-3.1",
-        token=hf_token
+        use_auth_token=hf_token
     )
     pipeline.to(torch.device("cuda"))
 
     diarization = pipeline(audio_path)
 
     segments = []
-    for turn, _, speaker in diarization.speaker_diarization.itertracks(yield_label=True):
+    for turn, _, speaker in diarization.itertracks(yield_label=True):
         segments.append((turn.start, turn.end, speaker))
 
     return segments
