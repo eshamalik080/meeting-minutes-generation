@@ -10,6 +10,8 @@ src/               ML pipeline research code (owned by the ML teammate — do no
 backend/           FastAPI app + API-facing ml_pipeline/ plug-in modules (owned by this track)
 frontend/          React + Vite + Tailwind web app (owned by this track)
 requirements.txt   Root-level ML env (Whisper, pyannote, spaCy, torch...) — unrelated to backend/
+render.yaml        Render Blueprint — deploys backend/ only (see DEPLOYMENT.md)
+DEPLOYMENT.md       Step-by-step guide to deploying both services for free
 ```
 
 `backend/ml_pipeline/` is a separate, lightweight package from the root
@@ -46,21 +48,46 @@ npm run dev
 
 Open http://127.0.0.1:5173. The dev server proxies `/api/*` requests to the
 backend at `http://127.0.0.1:8000` (see `frontend/vite.config.ts`), so no
-`.env` is required for local dev. The Phase 0 landing page shows a live
-"backend: ok" check if both servers are running correctly.
+`.env` is required for local dev.
 
-## Project status
+### Try the full flow
 
-Currently on **Phase 0 — scaffolding**. Backend has a placeholder
-`/health` endpoint only; frontend has a placeholder page proving the
-Tailwind + API-proxy setup works. Real endpoints, the mocked ML pipeline,
-exporters, and the full UI land in the phases that follow — see the
-project plan for details.
+Click **Get Started**, drag in any small mp3/mp4/wav/m4a file (content
+doesn't matter — the ML pipeline is mocked, see below), and watch it move
+through the animated processing steps into a full results dashboard with
+Summary / Transcript / Decisions / Action Items tabs and JSON/HTML/PDF
+downloads.
+
+## How the pieces fit together
+
+1. Frontend uploads a file → `POST /upload` → backend streams it to disk,
+   creates a job, returns immediately (`app/api.py`).
+2. A background task runs `ml_pipeline/pipeline.py`'s `run_pipeline()`:
+   preprocess → transcribe → diarize → merge → extract → assemble into a
+   validated `MeetingMinutes` object (`app/schemas.py`).
+3. Frontend polls `GET /status/{job_id}` for progress, then
+   `GET /result/{job_id}` once complete.
+4. `GET /export/{job_id}?format=json|html|pdf` generates (and caches) a
+   downloadable file in any of the three formats.
+
+Every ML stage (`preprocess_audio`, `transcribe`, `diarize`,
+`extract_minutes`) currently runs a **mock implementation** returning a
+consistent fake meeting, so the whole app works end-to-end today. See
+`backend/ml_pipeline/README.md` for exactly how the ML teammate's real
+code drops in later.
+
+## Deploying
+
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the full step-by-step guide —
+backend on Render, frontend on Vercel, both free tier, both auto-deploying
+from this repo via `render.yaml` and `frontend/vercel.json`.
 
 ## Manual setup notes
 
-- No API keys or external accounts are required through Phase 3 — the ML
-  pipeline is fully mocked.
+- No API keys or external accounts are required to run or develop this
+  locally — the ML pipeline is fully mocked.
+- Deploying (optional) needs a free Render account and a free Vercel
+  account — see `DEPLOYMENT.md`.
 - The ML teammate's environment (root `requirements.txt`) is heavyweight
   (torch, pyannote, Whisper, CUDA). The `backend/requirements.txt` env is
   intentionally separate and lightweight — you don't need the ML env to
