@@ -9,5 +9,15 @@ does NOT need to touch this file — just set USE_MOCK_ML=false in backend/.env
 """
 
 import os
+import sys
+from pathlib import Path
+
+# Puts the repo root on sys.path so _real_* implementations can
+# `from src.diarize import diarize_audio` etc. — src/ has no __init__.py,
+# but that's fine: it's a valid implicit namespace package as long as the
+# repo root is importable. See ML_INTEGRATION.md.
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 USE_MOCK = os.getenv("USE_MOCK_ML", "true").strip().lower() != "false"

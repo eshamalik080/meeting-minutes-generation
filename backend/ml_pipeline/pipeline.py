@@ -56,6 +56,13 @@ def run_pipeline(
 
     stage("extracting")
     minutes = extract_minutes(transcript_text)
+    if "error" in minutes:
+        # src/extract_minutes.py returns {"error": ..., "raw_output": ...}
+        # when the LLM doesn't return valid JSON, instead of raising. Without
+        # this check that shape would silently flow into MeetingMinutes as
+        # an empty summary/topics/decisions — surface it as a failed job
+        # instead, so the frontend shows a real error rather than a blank result.
+        raise RuntimeError(f"LLM extraction failed: {minutes.get('raw_output', minutes['error'])}")
 
     duration_seconds = max((seg["end"] for seg in transcript_segments), default=None)
     participants = list(dict.fromkeys(seg["speaker"] for seg in labeled_segments))

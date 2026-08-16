@@ -30,7 +30,9 @@ consistent, regardless of what audio file is actually uploaded.
 
 Each stage's docstring documents the exact input/output shape the rest of
 the app expects — match that shape in `_real_*` and nothing else needs to
-change. A full walkthrough of this handoff lands in Phase 8.
+change. See [`ML_INTEGRATION.md`](../../ML_INTEGRATION.md) at the repo
+root for the full walkthrough, including one small required refactor in
+`src/transcribe.py` and exact code for each `_real_*` function.
 
 ## Try it
 

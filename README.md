@@ -12,6 +12,7 @@ frontend/          React + Vite + Tailwind web app (owned by this track)
 requirements.txt   Root-level ML env (Whisper, pyannote, spaCy, torch...) — unrelated to backend/
 render.yaml        Render Blueprint — deploys backend/ only (see DEPLOYMENT.md)
 DEPLOYMENT.md       Step-by-step guide to deploying both services for free
+ML_INTEGRATION.md   Handoff guide for plugging src/ into backend/ml_pipeline/
 ```
 
 `backend/ml_pipeline/` is a separate, lightweight package from the root
@@ -73,8 +74,8 @@ downloads.
 Every ML stage (`preprocess_audio`, `transcribe`, `diarize`,
 `extract_minutes`) currently runs a **mock implementation** returning a
 consistent fake meeting, so the whole app works end-to-end today. See
-`backend/ml_pipeline/README.md` for exactly how the ML teammate's real
-code drops in later.
+[`ML_INTEGRATION.md`](ML_INTEGRATION.md) for exactly how the ML
+teammate's real code from `src/` drops in later.
 
 ## Deploying
 
