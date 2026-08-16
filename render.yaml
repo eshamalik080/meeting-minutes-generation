@@ -1,0 +1,28 @@
+# Render Blueprint — deploys the backend only (the ML teammate's src/ and
+# the frontend are not part of this service). In the Render dashboard:
+# New + > Blueprint > connect this repo > Render reads this file automatically.
+#
+# CORS_ORIGINS is set to localhost here as a placeholder — after deploying
+# the frontend (see DEPLOYMENT.md), update it in the Render dashboard to
+# the real frontend URL and Render will auto-redeploy.
+
+services:
+  - type: web
+    name: meeting-minutes-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: USE_MOCK_ML
+        value: "true"
+      - key: CORS_ORIGINS
+        value: "http://localhost:5173,http://127.0.0.1:5173"
+      - key: STORAGE_DIR
+        value: "./storage"
+      - key: MAX_UPLOAD_MB
+        value: "50"

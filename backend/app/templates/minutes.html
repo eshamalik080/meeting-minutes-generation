@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meeting Minutes — {{ m.source_filename }}</title>
+<style>
+  :root {
+    --accent: #4f46e5;
+    --accent-light: #eef2ff;
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #f9fafb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 20px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  header {
+    margin-bottom: 28px;
+  }
+  header h1 {
+    font-size: 30px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    letter-spacing: -0.02em;
+  }
+  header .meta {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin: 0;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+  .card p {
+    margin: 0;
+  }
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pill {
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .pill-muted {
+    background: var(--bg);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  ul.decisions {
+    margin: 0;
+    padding-left: 20px;
+  }
+  ul.decisions li {
+    margin-bottom: 8px;
+  }
+  ul.decisions li::marker {
+    color: var(--accent);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border);
+    padding: 0 10px 10px 0;
+  }
+  td {
+    padding: 10px 10px 10px 0;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  .badge {
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .transcript .segment {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .transcript .segment:last-child {
+    border-bottom: none;
+  }
+  .transcript .timestamp {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-right: 10px;
+  }
+  .transcript .speaker {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .transcript p {
+    margin: 4px 0 0;
+    font-size: 14px;
+  }
+  footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 28px;
+  }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .card { break-inside: avoid; border-color: #ddd; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Meeting Minutes</h1>
+    <p class="meta">
+      {{ m.source_filename }} &middot; Generated {{ generated_display }}
+      {% if m.duration_seconds %}&middot; Duration {{ duration_display }}{% endif %}
+    </p>
+  </header>
+
+  <section class="card">
+    <h2>Summary</h2>
+    <p>{{ m.summary or "No summary available." }}</p>
+  </section>
+
+  {% if m.key_topics %}
+  <section class="card">
+    <h2>Key Topics</h2>
+    <div class="pills">
+      {% for topic in m.key_topics %}<span class="pill">{{ topic }}</span>{% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if m.decisions %}
+  <section class="card">
+    <h2>Decisions</h2>
+    <ul class="decisions">
+      {% for d in m.decisions %}<li>{{ d }}</li>{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if m.action_items %}
+  <section class="card">
+    <h2>Action Items</h2>
+    <table>
+      <thead><tr><th>Task</th><th>Owner</th><th>Deadline</th></tr></thead>
+      <tbody>
+        {% for item in m.action_items %}
+        <tr>
+          <td>{{ item.task }}</td>
+          <td><span class="badge">{{ item.owner }}</span></td>
+          <td>{{ item.deadline }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  {% endif %}
+
+  {% if m.participants %}
+  <section class="card">
+    <h2>Participants</h2>
+    <div class="pills">
+      {% for p in m.participants %}<span class="pill pill-muted">{{ p }}</span>{% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if m.transcript %}
+  <section class="card">
+    <h2>Full Transcript</h2>
+    <div class="transcript">
+      {% for seg in m.transcript %}
+      <div class="segment">
+        <span class="timestamp">{{ format_timestamp(seg.start) }}</span>
+        <span class="speaker">{{ seg.speaker }}</span>
+        <p>{{ seg.text }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <footer>Generated by Automated Meeting Minutes &middot; job {{ m.job_id }}</footer>
+</div>
+</body>
+</html>

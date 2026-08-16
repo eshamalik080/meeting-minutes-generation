@@ -1,0 +1,12 @@
+# Backend (FastAPI) dependencies only.
+# This is intentionally separate from the top-level /requirements.txt, which
+# belongs to the ML pipeline (Whisper, pyannote, spaCy, torch, etc). Do not merge them.
+
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+python-multipart==0.0.20
+reportlab==4.2.5
+jinja2==3.1.5
+python-dotenv==1.0.1
+aiofiles==24.1.0
