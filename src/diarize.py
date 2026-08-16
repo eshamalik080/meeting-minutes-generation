@@ -1,0 +1,30 @@
+import torch
+from pyannote.audio import Pipeline
+import os
+
+def diarize_audio(audio_path: str) -> list:
+    """
+    Step 5: Speaker Diarization
+    Returns list of (start_sec, end_sec, speaker_label) tuples.
+    """
+    hf_token = os.environ["HF_TOKEN"]
+
+    pipeline = Pipeline.from_pretrained(
+        "pyannote/speaker-diarization-3.1",
+        token=hf_token
+    )
+    pipeline.to(torch.device("cuda"))
+
+    diarization = pipeline(audio_path)
+
+    segments = []
+    for turn, _, speaker in diarization.speaker_diarization.itertracks(yield_label=True):
+        segments.append((turn.start, turn.end, speaker))
+
+    return segments
+
+
+if __name__ == "__main__":
+    results = diarize_audio("data/processed_audio.wav")
+    for start, end, speaker in results:
+        print(f"start={start:.1f}s stop={end:.1f}s speaker={speaker}")
