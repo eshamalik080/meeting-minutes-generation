@@ -12,12 +12,20 @@ from pathlib import Path
 from uuid import uuid4
 
 import aiofiles
-from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Query, UploadFile
+from fastapi.responses import FileResponse
 
-from app.config import ALLOWED_EXTENSIONS, MAX_UPLOAD_BYTES, MAX_UPLOAD_MB, UPLOAD_CHUNK_SIZE, UPLOADS_DIR
+from app.config import ALLOWED_EXTENSIONS, MAX_UPLOAD_BYTES, MAX_UPLOAD_MB, OUTPUTS_DIR, UPLOAD_CHUNK_SIZE, UPLOADS_DIR
+from app.exporters import export_html, export_json, export_pdf
 from app.jobs import job_store
 from app.schemas import JobStatus, MeetingMinutes, StatusResponse, UploadResponse
 from ml_pipeline.pipeline import run_pipeline
+
+EXPORTERS = {
+    "json": (export_json, "application/json"),
+    "html": (export_html, "text/html"),
+    "pdf": (export_pdf, "application/pdf"),
+}
 
 logger = logging.getLogger("app.api")
 
@@ -98,3 +106,20 @@ def get_result(job_id: str):
     if job.status != JobStatus.COMPLETED:
         raise HTTPException(409, f"Job is not completed yet (status: {job.status.value}).")
     return job.result
+
+
+@router.get("/export/{job_id}")
+def export_result(job_id: str, format: str = Query(..., pattern="^(json|html|pdf)$")):
+    job = job_store.get(job_id)
+    if job is None:
+        raise HTTPException(404, "Job not found.")
+    if job.status != JobStatus.COMPLETED:
+        raise HTTPException(409, f"Job is not completed yet (status: {job.status.value}).")
+
+    exporter, media_type = EXPORTERS[format]
+    output_path = OUTPUTS_DIR / f"{job_id}.{format}"
+    if not output_path.exists():
+        exporter(job.result, output_path)
+
+    download_name = f"meeting-minutes-{job_id[:8]}.{format}"
+    return FileResponse(output_path, media_type=media_type, filename=download_name)
