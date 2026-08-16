@@ -5,7 +5,14 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import ProcessingScreen from "../components/ProcessingScreen";
 import ResultsDashboard from "../components/ResultsDashboard";
 import UploadDropzone from "../components/UploadDropzone";
-import { type MeetingMinutes, type StatusResponse, getResult, getStatus } from "../lib/api";
+import { ApiError, type MeetingMinutes, type StatusResponse, getResult, getStatus } from "../lib/api";
+
+function describeError(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) {
+    return err.status === 404 ? "This job doesn't exist — it may have expired or the link is wrong." : err.message;
+  }
+  return fallback;
+}
 
 const POLL_INTERVAL_MS = 2000;
 
@@ -36,14 +43,15 @@ export default function Workspace() {
           try {
             const fullResult = await getResult(jobId!);
             if (!cancelled) setMinutes(fullResult);
-          } catch {
-            if (!cancelled) setError("Job completed, but the results couldn't be loaded.");
+          } catch (err) {
+            if (!cancelled) setError(describeError(err, "Job completed, but the results couldn't be loaded."));
           }
         } else if (result.status === "failed") {
           clearInterval(interval);
         }
-      } catch {
-        if (!cancelled) setError("Couldn't reach the backend to check job status.");
+      } catch (err) {
+        clearInterval(interval);
+        if (!cancelled) setError(describeError(err, "Couldn't reach the backend to check job status."));
       }
     }
 
