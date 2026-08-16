@@ -1,47 +1,54 @@
-import { Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import ProcessingScreen from "../components/ProcessingScreen";
+import ResultsDashboard from "../components/ResultsDashboard";
 import UploadDropzone from "../components/UploadDropzone";
-import { type StatusResponse, getStatus } from "../lib/api";
+import { type MeetingMinutes, type StatusResponse, getResult, getStatus } from "../lib/api";
 
-const STAGE_LABELS: Record<string, string> = {
-  preprocessing: "Preprocessing audio",
-  transcribing: "Transcribing speech",
-  diarizing: "Identifying speakers",
-  extracting: "Extracting minutes with AI",
-};
+const POLL_INTERVAL_MS = 2000;
 
-/**
- * Phase 4 checkpoint: uploads a file and polls job status. The full
- * animated progress UI and results dashboard (tabs, downloads) are built
- * in Phase 5 — this proves the upload -> job -> status loop works
- * end-to-end against the real backend in the meantime.
- */
 export default function Workspace() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const [status, setStatus] = useState<StatusResponse | null>(null);
-  const [pollError, setPollError] = useState<string | null>(null);
+  const [minutes, setMinutes] = useState<MeetingMinutes | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!jobId) return;
+    setStatus(null);
+    setMinutes(null);
+    setError(null);
+
     let cancelled = false;
+    let interval: ReturnType<typeof setInterval>;
 
     async function poll() {
       try {
         const result = await getStatus(jobId!);
-        if (!cancelled) {
-          setStatus(result);
-          setPollError(null);
+        if (cancelled) return;
+        setStatus(result);
+
+        if (result.status === "completed") {
+          clearInterval(interval);
+          try {
+            const fullResult = await getResult(jobId!);
+            if (!cancelled) setMinutes(fullResult);
+          } catch {
+            if (!cancelled) setError("Job completed, but the results couldn't be loaded.");
+          }
+        } else if (result.status === "failed") {
+          clearInterval(interval);
         }
       } catch {
-        if (!cancelled) setPollError("Couldn't reach the backend to check job status.");
+        if (!cancelled) setError("Couldn't reach the backend to check job status.");
       }
     }
 
     poll();
-    const interval = setInterval(poll, 2000);
+    interval = setInterval(poll, POLL_INTERVAL_MS);
     return () => {
       cancelled = true;
       clearInterval(interval);
@@ -62,44 +69,50 @@ export default function Workspace() {
     );
   }
 
+  if (error && !status) {
+    return <ErrorScreen message={error} />;
+  }
+
+  if (status?.status === "failed") {
+    return <ErrorScreen message={status.error ?? "Something went wrong while processing this recording."} />;
+  }
+
+  if (status?.status === "completed" && minutes) {
+    return <ResultsDashboard minutes={minutes} />;
+  }
+
+  if (status?.status === "completed" && !minutes) {
+    return (
+      <div className="mx-auto max-w-lg px-6 py-32 text-center">
+        <Loader2 className="mx-auto h-8 w-8 animate-spin text-indigo-500" />
+        <p className="mt-4 text-slate-500">{error ?? "Loading results..."}</p>
+      </div>
+    );
+  }
+
+  if (status) {
+    return <ProcessingScreen status={status} />;
+  }
+
   return (
-    <div className="mx-auto max-w-2xl px-6 py-20">
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        {status?.status === "completed" ? (
-          <>
-            <p className="text-lg font-semibold text-emerald-600">Minutes are ready!</p>
-            <p className="mt-1 text-sm text-slate-500">
-              The full results dashboard lands in Phase 5. For now, fetch the result directly:
-            </p>
-            <code className="mt-4 block break-all rounded-lg bg-slate-50 px-4 py-3 text-left text-xs text-slate-600">
-              GET /api/result/{jobId}
-            </code>
-          </>
-        ) : status?.status === "failed" ? (
-          <>
-            <p className="text-lg font-semibold text-rose-600">Processing failed</p>
-            <p className="mt-1 text-sm text-slate-500">{status.error}</p>
-          </>
-        ) : (
-          <>
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-indigo-500" />
-            <p className="mt-4 font-medium text-slate-900">
-              {status?.stage ? STAGE_LABELS[status.stage] ?? status.stage : "Starting up..."}
-            </p>
-            <p className="mt-1 text-sm text-slate-500">{status?.filename}</p>
-          </>
-        )}
+    <div className="mx-auto max-w-lg px-6 py-32 text-center">
+      <Loader2 className="mx-auto h-8 w-8 animate-spin text-indigo-500" />
+      <p className="mt-4 text-slate-500">Loading job...</p>
+    </div>
+  );
+}
 
-        {pollError && <p className="mt-4 text-sm text-rose-600">{pollError}</p>}
-
-        <p className="mt-6 text-xs text-slate-400">Job ID: {jobId}</p>
-      </div>
-
-      <div className="mt-6 text-center">
-        <Link to="/app" className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-          &larr; Upload a different recording
-        </Link>
-      </div>
+function ErrorScreen({ message }: { message: string }) {
+  return (
+    <div className="mx-auto max-w-lg px-6 py-32 text-center">
+      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-500">
+        <AlertTriangle className="h-6 w-6" strokeWidth={2} />
+      </span>
+      <p className="mt-4 font-medium text-slate-900">Something went wrong</p>
+      <p className="mt-1 text-sm text-slate-500">{message}</p>
+      <Link to="/app" className="mt-6 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-700">
+        &larr; Try a different recording
+      </Link>
     </div>
   );
 }
