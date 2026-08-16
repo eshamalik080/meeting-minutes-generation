@@ -1,0 +1,9 @@
+meeting-min-env/
+venv/
+__pycache__/
+*.pyc
+data/*.flac
+data/*.wav
+data/*.mp3
+*.pt
+mlruns/
