@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/*
+  Design tokens and full theme are layered in during Phase 4 (frontend
+  foundation). For now this just wires Tailwind in so Phase 0 can be
+  verified end-to-end.
+*/
+body {
+  margin: 0;
+}

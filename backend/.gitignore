@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Uploaded media and generated exports — never commit user data.
+storage/uploads/*
+storage/outputs/*
+!storage/uploads/.gitkeep
+!storage/outputs/.gitkeep
