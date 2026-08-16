@@ -17,7 +17,7 @@ def diarize_audio(audio_path: str) -> list:
     )
     pipeline.to(torch.device("cuda"))
 
-    diarization = pipeline(audio_path)
+    diarization = pipeline(audio_path, min_speakers=1, max_speakers=8)
 
     segments = []
     for turn, _, speaker in diarization.itertracks(yield_label=True):
