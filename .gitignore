@@ -8,3 +8,5 @@ data/*.mp3
 *.pt
 mlruns/
 outputs/*
+mlflow.db
+mlruns/

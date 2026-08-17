@@ -3,6 +3,7 @@ from rouge_score import rouge_scorer
 import sys
 import os
 import json
+import mlflow
 
 sys.path.append(os.path.dirname(__file__))
 from extract_minutes import extract_minutes
@@ -24,51 +25,63 @@ def compute_rouge(generated_summary: str, reference_summary: str) -> dict:
 
 
 def evaluate_pipeline(n_samples: int = 3, model_name: str = "qwen2.5"):
-    samples = load_meetingbank_sample(n_samples)
-    results = []
+    mlflow.set_experiment("meeting-minutes-llm-comparison")
 
-    for i, sample in enumerate(samples):
-        transcript = sample["transcript"]
-        reference_summary = sample["summary"]
+    with mlflow.start_run(run_name=f"{model_name}_n{n_samples}"):
+        mlflow.log_param("llm_model", model_name)
+        mlflow.log_param("n_samples", n_samples)
+        mlflow.log_param("dataset", "MeetingBank")
 
-        # Truncate very long transcripts to keep LLM calls reasonable
-        transcript_for_llm = transcript[:4000]
+        samples = load_meetingbank_sample(n_samples)
+        results = []
 
-        minutes = extract_minutes(transcript_for_llm, model_name=model_name)
-        generated_summary = minutes.get("summary", "")
+        for i, sample in enumerate(samples):
+            transcript = sample["transcript"]
+            reference_summary = sample["summary"]
+            transcript_for_llm = transcript[:4000]
 
-        scores = compute_rouge(generated_summary, reference_summary)
+            minutes = extract_minutes(transcript_for_llm, model_name=model_name)
+            generated_summary = minutes.get("summary", "")
 
-        results.append({
-            "sample_id": i,
-            "generated_summary": generated_summary,
-            "reference_summary": reference_summary,
-            "rouge_scores": scores
-        })
+            scores = compute_rouge(generated_summary, reference_summary)
 
-        print(f"\n=== Sample {i} ===")
-        print(f"Generated: {generated_summary}")
-        print(f"Reference: {reference_summary}")
-        print(f"ROUGE: {scores}")
+            results.append({
+                "sample_id": i,
+                "generated_summary": generated_summary,
+                "reference_summary": reference_summary,
+                "rouge_scores": scores
+            })
 
-    avg_rouge1 = sum(r["rouge_scores"]["rouge1"] for r in results) / len(results)
-    avg_rouge2 = sum(r["rouge_scores"]["rouge2"] for r in results) / len(results)
-    avg_rougeL = sum(r["rouge_scores"]["rougeL"] for r in results) / len(results)
+            print(f"\n=== Sample {i} ===")
+            print(f"Generated: {generated_summary}")
+            print(f"Reference: {reference_summary}")
+            print(f"ROUGE: {scores}")
 
-    print(f"\n=== Average ROUGE across {n_samples} samples ({model_name}) ===")
-    print(f"ROUGE-1: {avg_rouge1:.4f}")
-    print(f"ROUGE-2: {avg_rouge2:.4f}")
-    print(f"ROUGE-L: {avg_rougeL:.4f}")
+        avg_rouge1 = sum(r["rouge_scores"]["rouge1"] for r in results) / len(results)
+        avg_rouge2 = sum(r["rouge_scores"]["rouge2"] for r in results) / len(results)
+        avg_rougeL = sum(r["rouge_scores"]["rougeL"] for r in results) / len(results)
 
-    with open("outputs/evaluation_results.json", "w") as f:
-        json.dump({
-            "model": model_name,
-            "n_samples": n_samples,
-            "avg_rouge1": avg_rouge1,
-            "avg_rouge2": avg_rouge2,
-            "avg_rougeL": avg_rougeL,
-            "per_sample": results
-        }, f, indent=2)
+        mlflow.log_metric("avg_rouge1", avg_rouge1)
+        mlflow.log_metric("avg_rouge2", avg_rouge2)
+        mlflow.log_metric("avg_rougeL", avg_rougeL)
+
+        print(f"\n=== Average ROUGE across {n_samples} samples ({model_name}) ===")
+        print(f"ROUGE-1: {avg_rouge1:.4f}")
+        print(f"ROUGE-2: {avg_rouge2:.4f}")
+        print(f"ROUGE-L: {avg_rougeL:.4f}")
+
+        output_path = f"outputs/evaluation_{model_name}.json"
+        with open(output_path, "w") as f:
+            json.dump({
+                "model": model_name,
+                "n_samples": n_samples,
+                "avg_rouge1": avg_rouge1,
+                "avg_rouge2": avg_rouge2,
+                "avg_rougeL": avg_rougeL,
+                "per_sample": results
+            }, f, indent=2)
+
+        mlflow.log_artifact(output_path)
 
     return results
 
