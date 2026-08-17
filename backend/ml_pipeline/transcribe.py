@@ -33,8 +33,9 @@ def _mock_transcribe(audio_path: str) -> list[dict]:
 
 
 def _real_transcribe(audio_path: str) -> list[dict]:
-    raise NotImplementedError(
-        "Wire this up to src/transcribe.py: load the Whisper model once at "
-        "module import (not per-call), then return "
-        "whisper_result['segments'] reshaped to [{'start','end','text'}, ...]."
-    )
+    from src.transcribe import transcribe_audio
+    result = transcribe_audio(audio_path)
+    return [
+        {"start": seg["start"], "end": seg["end"], "text": seg["text"]}
+        for seg in result["segments"]
+    ]

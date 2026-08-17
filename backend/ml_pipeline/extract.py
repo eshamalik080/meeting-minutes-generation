@@ -44,8 +44,5 @@ def _mock_extract_minutes(transcript_with_speakers: str) -> dict:
 
 
 def _real_extract_minutes(transcript_with_speakers: str) -> dict:
-    raise NotImplementedError(
-        "Wire this up to src/extract_minutes.py: call "
-        "extract_minutes(transcript_with_speakers, model_name='qwen2.5') "
-        "and return its dict as-is — the shape already matches."
-    )
+    from src.extract_minutes import extract_minutes as real_extract_minutes
+    return real_extract_minutes(transcript_with_speakers, model_name="qwen2.5")

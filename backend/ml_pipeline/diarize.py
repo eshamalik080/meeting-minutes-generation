@@ -37,8 +37,9 @@ def _mock_diarize(audio_path: str) -> list[dict]:
 
 
 def _real_diarize(audio_path: str) -> list[dict]:
-    raise NotImplementedError(
-        "Wire this up to src/diarize.py: call diarize_audio(audio_path), then "
-        "reshape each (start, end, speaker) tuple into "
-        "{'start': start, 'end': end, 'speaker': speaker}."
-    )
+    from src.diarize import diarize_audio
+    segments = diarize_audio(audio_path)
+    return [
+        {"start": start, "end": end, "speaker": speaker}
+        for start, end, speaker in segments
+    ]

@@ -44,7 +44,5 @@ def _mock_preprocess_audio(file_path: str) -> str:
 
 
 def _real_preprocess_audio(file_path: str) -> str:
-    raise NotImplementedError(
-        "Wire this up to src/preprocess.py: "
-        "extract_and_normalize_audio(file_path) then apply_vad() on the result."
-    )
+    from src.preprocess import extract_and_normalize_audio
+    return extract_and_normalize_audio(file_path)
