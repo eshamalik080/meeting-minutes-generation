@@ -28,7 +28,7 @@ export default function ResultsDashboard({ minutes }: ResultsDashboardProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("summary");
 
   return (
-    <div className="animate-fade-in mx-auto max-w-4xl px-6 py-14">
+    <div className="mx-auto max-w-4xl px-6 py-14">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Meeting Minutes</h1>
@@ -40,7 +40,7 @@ export default function ResultsDashboard({ minutes }: ResultsDashboardProps) {
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           <Link
             to="/app"
-            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-indigo-300 hover:text-indigo-600 hover:shadow-md active:translate-y-0"
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600"
           >
             <Plus className="h-4 w-4" strokeWidth={2} />
             New upload
@@ -49,7 +49,7 @@ export default function ResultsDashboard({ minutes }: ResultsDashboardProps) {
             <a
               key={format}
               href={exportUrl(minutes.job_id, format)}
-              className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-indigo-300 hover:text-indigo-600 hover:shadow-md active:translate-y-0"
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600"
             >
               <Icon className="h-4 w-4" strokeWidth={2} />
               {label}
@@ -77,10 +77,10 @@ export default function ResultsDashboard({ minutes }: ResultsDashboardProps) {
               key={key}
               type="button"
               onClick={() => setActiveTab(key)}
-              className={`flex shrink-0 items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-all duration-200 ease-out ${
+              className={`flex shrink-0 items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition ${
                 activeTab === key
                   ? "border-indigo-600 text-indigo-600"
-                  : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700"
+                  : "border-transparent text-slate-500 hover:text-slate-700"
               }`}
             >
               <Icon className="h-4 w-4" strokeWidth={2} />
@@ -90,7 +90,7 @@ export default function ResultsDashboard({ minutes }: ResultsDashboardProps) {
         </div>
       </div>
 
-      <div key={activeTab} className="animate-fade-in mt-6">
+      <div className="mt-6">
         {activeTab === "summary" && <SummaryTab minutes={minutes} />}
         {activeTab === "transcript" && <TranscriptTab minutes={minutes} />}
         {activeTab === "decisions" && <DecisionsTab minutes={minutes} />}

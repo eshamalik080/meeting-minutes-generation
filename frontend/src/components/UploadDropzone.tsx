@@ -123,7 +123,7 @@ export default function UploadDropzone({ onUploaded }: UploadDropzoneProps) {
             type="button"
             onClick={clearFile}
             disabled={isUploading}
-            className="ml-3 shrink-0 rounded-md p-1.5 text-slate-400 transition-all duration-200 ease-out hover:scale-110 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-40 disabled:hover:scale-100"
+            className="ml-3 shrink-0 rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-40"
             aria-label="Remove file"
           >
             <X className="h-4 w-4" />
@@ -142,7 +142,7 @@ export default function UploadDropzone({ onUploaded }: UploadDropzoneProps) {
         type="button"
         onClick={handleUpload}
         disabled={!file || isUploading}
-        className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:translate-y-0 disabled:bg-slate-300 disabled:shadow-none"
+        className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300"
       >
         {isUploading ? (
           <>

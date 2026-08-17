@@ -10,8 +10,3 @@ reportlab==4.2.5
 jinja2==3.1.5
 python-dotenv==1.0.1
 aiofiles==24.1.0
-
-# Auth (backend/app/auth/) — signup/login with hashed passwords + JWT sessions.
-bcrypt==4.2.1
-PyJWT==2.10.1
-email-validator==2.2.0

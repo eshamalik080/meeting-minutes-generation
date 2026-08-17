@@ -17,7 +17,7 @@ export default function ProcessingScreen({ status }: ProcessingScreenProps) {
   const currentIndex = status.stage ? STAGES.findIndex((s) => s.key === status.stage) : -1;
 
   return (
-    <div className="animate-fade-in mx-auto max-w-lg px-6 py-20">
+    <div className="mx-auto max-w-lg px-6 py-20">
       <div className="text-center">
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Generating your minutes</h1>
         <p className="mt-2 truncate text-sm text-slate-500">{status.filename}</p>
@@ -35,13 +35,13 @@ export default function ProcessingScreen({ status }: ProcessingScreenProps) {
               <li key={stage.key} className="relative flex gap-4 pb-8 last:pb-0">
                 {index < STAGES.length - 1 && (
                   <span
-                    className={`absolute left-[19px] top-10 h-[calc(100%-2.5rem)] w-px transition-colors duration-300 ${
+                    className={`absolute left-[19px] top-10 h-[calc(100%-2.5rem)] w-px ${
                       isDone ? "bg-indigo-300" : "bg-slate-200"
                     }`}
                   />
                 )}
                 <span
-                  className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors duration-300 ${
+                  className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                     isDone
                       ? "border-indigo-600 bg-indigo-600 text-white"
                       : isActive
@@ -56,12 +56,8 @@ export default function ProcessingScreen({ status }: ProcessingScreenProps) {
                   )}
                 </span>
                 <div className="pt-1.5">
-                  <p className={`font-medium transition-colors duration-300 ${isPending ? "text-slate-400" : "text-slate-900"}`}>
-                    {stage.label}
-                  </p>
-                  <p className={`text-sm transition-colors duration-300 ${isPending ? "text-slate-300" : "text-slate-500"}`}>
-                    {stage.description}
-                  </p>
+                  <p className={`font-medium ${isPending ? "text-slate-400" : "text-slate-900"}`}>{stage.label}</p>
+                  <p className={`text-sm ${isPending ? "text-slate-300" : "text-slate-500"}`}>{stage.description}</p>
                 </div>
               </li>
             );

@@ -8,6 +8,3 @@ storage/uploads/*
 storage/outputs/*
 !storage/uploads/.gitkeep
 !storage/outputs/.gitkeep
-
-# Local auth database (user emails + password hashes) — never commit.
-storage/*.db
