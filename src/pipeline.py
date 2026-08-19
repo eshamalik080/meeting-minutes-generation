@@ -6,7 +6,7 @@ from extract_minutes import extract_minutes
 from export import export_all_formats
 
 
-def generate_minutes(audio_path: str, llm_model: str = "qwen2.5") -> dict:
+def generate_minutes(audio_path: str, llm_model: str = "qwen2.5-finetuned") -> dict:
     """
     Single entry point for the full ML pipeline.
     Input: path to raw audio/video file
@@ -40,5 +40,7 @@ def generate_minutes(audio_path: str, llm_model: str = "qwen2.5") -> dict:
 
 if __name__ == "__main__":
     import json
-    result = generate_minutes("data/sample_audio.flac")
+    import sys
+    audio_path = sys.argv[1] if len(sys.argv) > 1 else "data/sample_audio.flac"
+    result = generate_minutes(audio_path)
     print(json.dumps(result, indent=2))
