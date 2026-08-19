@@ -1,0 +1,6 @@
+outs:
+- md5: 796bf48e2ad08b92a1c2f74ff4f1316b.dir
+  size: 441662070
+  nfiles: 29
+  hash: md5
+  path: qwen2.5-7b-lora-minutes
