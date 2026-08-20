@@ -77,19 +77,3 @@ consistent fake meeting, so the whole app works end-to-end today. See
 [`ML_INTEGRATION.md`](ML_INTEGRATION.md) for exactly how the ML
 teammate's real code from `src/` drops in later.
 
-## Deploying
-
-See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the full step-by-step guide —
-backend on Render, frontend on Vercel, both free tier, both auto-deploying
-from this repo via `render.yaml` and `frontend/vercel.json`.
-
-## Manual setup notes
-
-- No API keys or external accounts are required to run or develop this
-  locally — the ML pipeline is fully mocked.
-- Deploying (optional) needs a free Render account and a free Vercel
-  account — see `DEPLOYMENT.md`.
-- The ML teammate's environment (root `requirements.txt`) is heavyweight
-  (torch, pyannote, Whisper, CUDA). The `backend/requirements.txt` env is
-  intentionally separate and lightweight — you don't need the ML env to
-  run or develop the web app.
